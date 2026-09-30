@@ -37,7 +37,7 @@ function makeActionJob(def) {
       const state = pickObj(res.data, ['state', 'status']);
       // Recipes may report e.g. { state: { already_connected: true } } → nothing was sent.
       if (state.already_connected || state.already_sent || state.already_liked || state.cannot_message) {
-        const err = new JobError(Object.keys(state).find((k) => state[k] === true) || 'not_sent', { status: 'skipped' });
+        const err = new JobError(['already_connected', 'already_sent', 'already_liked', 'cannot_message'].find((k) => Boolean(state[k])) || 'not_sent', { status: 'skipped' });
         err.data = { sent: false, state };
         throw err;
       }

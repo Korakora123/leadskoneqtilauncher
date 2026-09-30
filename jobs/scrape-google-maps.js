@@ -8,7 +8,7 @@
  */
 const { requireRecipe, requireFields, parseCount, parseRating, pickList, clean } = require('./_helpers');
 
-const PHONE_RE = /\+?\d[\d\s().-]{6,}\d/;
+const PHONE_RE = /\+?\(?\d[\d\s().-]{6,}\d/; // leading "(" kept: (512) 555-0142
 const HOURS_RE = /open|closed|closes|opens|24 hours|abierto|cerrado|مفتوح|مغلق/i;
 
 /** Seeded recipe returns `info` rows (e.g. ["4.6(120) · Plumber · 12 Main St", "Open ⋅ Closes 6PM · (214) 555-0100"]). */
