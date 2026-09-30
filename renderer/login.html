@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'">
+  <title>Koneqti Leads — Sign in</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="login">
+  <div class="center">
+    <div class="card stack" style="width: 100%; max-width: 380px;">
+      <div class="brand"><div class="logo">K</div><div><h1>Koneqti Leads</h1><div class="muted">Find Clients. Send Outreach. Close Deals.</div></div></div>
+      <p class="muted" style="margin:0">Sign in with your Koneqti Leads account. This app runs browser jobs on your own internet connection so Instagram and LinkedIn outreach stays safe.</p>
+      <div id="config-warning" class="notice" hidden>This launcher is not configured yet (missing brain / Supabase settings). Reinstall from the dashboard download page.</div>
+      <form id="login-form" class="stack" autocomplete="on">
+        <div><label for="email">Email</label><input id="email" type="email" required autocomplete="username"></div>
+        <div><label for="password">Password</label><input id="password" type="password" required autocomplete="current-password"></div>
+        <div id="login-error" class="error"></div>
+        <button id="login-btn" class="btn block" type="submit">Sign in</button>
+      </form>
+      <div class="row spread muted" style="font-size:12px">
+        <a data-open="signup">Create account</a>
+        <a data-open="forgot-password">Forgot password?</a>
+      </div>
+    </div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>

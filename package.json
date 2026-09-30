@@ -1,0 +1,79 @@
+{
+  "name": "koneqti-leads-launcher",
+  "productName": "Koneqti Leads",
+  "version": "0.1.0",
+  "description": "Koneqti Leads desktop launcher — runs browser jobs from the Koneqti Leads brain on your own PC, IP and Chrome.",
+  "main": "main.js",
+  "author": "Koneqti <contact@koneqti.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "electron .",
+    "icon": "node scripts/make-icon.js && node scripts/make-icon.js 512",
+    "check": "node scripts/check.js",
+    "smoke": "node test/smoke-ws.js && node test/smoke-recipe.js && node test/smoke-seeds.js",
+    "dist": "electron-builder --win --mac --linux",
+    "dist:win": "electron-builder --win",
+    "dist:mac": "electron-builder --mac",
+    "dist:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.0",
+    "dotenv": "^16.4.5",
+    "playwright-core": "^1.56.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.koneqti.leads.launcher",
+    "productName": "Koneqti Leads",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!dist/**",
+      "!test/**",
+      "!scripts/**",
+      "!.env",
+      "!*.md"
+    ],
+    "extraResources": [
+      {
+        "from": ".env.example",
+        "to": ".env.example"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon-512.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.business",
+      "icon": "assets/icon-512.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office",
+      "icon": "assets/icon-512.png"
+    }
+  }
+}

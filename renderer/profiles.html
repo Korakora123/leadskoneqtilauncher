@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'">
+  <title>Koneqti Leads — Profiles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="profiles">
+  <div class="wrap stack">
+    <div class="row spread">
+      <div class="brand"><div class="logo">K</div><div><h1>Koneqti Leads</h1><div class="muted" id="who">—</div></div></div>
+      <div class="row">
+        <button class="btn ghost sm" data-open="dashboard">Open dashboard</button>
+        <button class="btn ghost sm" id="logout-btn">Sign out</button>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card stack">
+        <div class="row spread"><h2>Brain connection</h2><span id="brain-badge" class="badge">—</span></div>
+        <div class="row"><span id="brain-dot" class="dot"></span><span id="brain-text">Checking…</span></div>
+        <div class="muted" id="jobs-text">No jobs running</div>
+        <div id="chrome-warning" class="notice" hidden>Google Chrome was not found. Install Chrome so jobs can run.</div>
+      </div>
+      <div class="card stack">
+        <h2>Settings</h2>
+        <div class="row spread"><span>Pause all jobs</span><input type="checkbox" id="set-paused"></div>
+        <div class="row spread"><span>Start with my computer</span><input type="checkbox" id="set-autolaunch"></div>
+        <div class="row spread"><span>Parallel jobs</span>
+          <select id="set-concurrency" style="width:80px"><option value="1">1</option><option value="2">2</option></select>
+        </div>
+        <div class="muted" style="font-size:12px">Engines: <span id="engines" class="mono">—</span></div>
+      </div>
+    </div>
+
+    <div class="card stack">
+      <div class="row spread">
+        <h2>Social profiles</h2>
+        <span class="muted" style="font-size:12px">Each profile keeps one fingerprint and your own IP for life.</span>
+      </div>
+      <form id="add-form" class="row" style="align-items:flex-end">
+        <div style="flex:1 1 140px"><label for="add-platform">Platform</label>
+          <select id="add-platform">
+            <option value="instagram">Instagram</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="facebook">Facebook</option>
+            <option value="tiktok">TikTok</option>
+          </select>
+        </div>
+        <div style="flex:2 1 180px"><label for="add-handle">Handle / account name</label><input id="add-handle" placeholder="@yourbusiness" required></div>
+        <div style="flex:1 1 150px"><label for="add-engine">Browser engine</label>
+          <select id="add-engine">
+            <option value="chromium_patched">Chrome (default)</option>
+            <option value="cloakbrowser">CloakBrowser</option>
+            <option value="camoufox">Camoufox</option>
+          </select>
+        </div>
+        <button class="btn" type="submit">Add profile</button>
+      </form>
+      <div id="add-error" class="error"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Platform</th><th>Handle</th><th>Engine</th><th>Status</th><th>Today</th><th>Warmup</th><th>Working hours</th><th></th></tr></thead>
+          <tbody id="profiles-body"><tr><td colspan="8" class="empty">No profiles yet — add one, then open its browser to log in.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="muted" style="font-size:12px">
+      Your passwords and cookies stay on this computer. Koneqti never stores your social logins on its servers.
+      <a data-open="dashboard/settings">Download / manage from the dashboard</a> · v<span id="app-version">—</span>
+    </div>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>
