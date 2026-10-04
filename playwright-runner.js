@@ -19,7 +19,7 @@ const { executeRecipe, RecipeError } = require('./recipe-executor');
 const { detectChallenges, BLOCKING_WARNINGS } = require('./detection');
 const behavior = require('./behavior');
 const { getJob, platformOf, categoryOf } = require('./jobs');
-const { SOCIAL_PLATFORMS, LOGIN_URLS } = require('./profile-manager');
+const { LOGIN_PLATFORMS, LOGIN_URLS } = require('./profile-manager');
 const { createLogger } = require('./logger');
 
 const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000;
@@ -238,7 +238,7 @@ class JobRunner extends EventEmitter {
     }
 
     // Web jobs (no login): use a system web profile slot.
-    if (!SOCIAL_PLATFORMS.includes(platform)) {
+    if (!LOGIN_PLATFORMS.includes(platform)) {
       if (job.profile_id && this.pm.get(job.profile_id)) {
         const p = this.pm.get(job.profile_id);
         if (this.pm.isBusy(p.id)) return { wait: true };
@@ -252,7 +252,7 @@ class JobRunner extends EventEmitter {
       return { wait: true };
     }
 
-    // Social jobs: pick the profile.
+    // Login jobs (social accounts + load boards): pick the user's profile for that platform.
     let candidates;
     if (job.profile_id) {
       const p = this.pm.get(job.profile_id);
@@ -333,7 +333,7 @@ class JobRunner extends EventEmitter {
     const { job, profile, platform, category } = entry;
     const mod = getJob(job.job_type);
     const signal = entry.controller.signal;
-    const social = SOCIAL_PLATFORMS.includes(platform);
+    const social = LOGIN_PLATFORMS.includes(platform);
     const adapter = new BrowserAdapter(entry.engine || 'chromium_patched', {
       profileManager: this.pm,
       headless: this.headless,
@@ -415,7 +415,8 @@ class JobRunner extends EventEmitter {
 
     this._result(job, {
       status: outcome.status,
-      data: { ...(outcome.data || {}), _meta: meta },
+      // A job may add its own _meta keys (e.g. search_load_board pacing); runner keys win.
+      data: { ...(outcome.data || {}), _meta: { ...((outcome.data && outcome.data._meta) || {}), ...meta } },
       error: outcome.error,
       warnings: [...warnings],
       failed_step: outcome.failed_step,
@@ -475,7 +476,7 @@ class JobRunner extends EventEmitter {
       },
       download: (url) => self.downloadFn(url),
       async detect() {
-        const d = await detectChallenges(page, SOCIAL_PLATFORMS.includes(platform) ? { platform } : {});
+        const d = await detectChallenges(page, LOGIN_PLATFORMS.includes(platform) ? { platform } : {});
         return { ...d, blocking: d.warnings.some((w) => BLOCKING_WARNINGS.includes(w)) };
       },
     };

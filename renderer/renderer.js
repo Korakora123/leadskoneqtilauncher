@@ -6,7 +6,7 @@
   const page = document.body.dataset.page;
   const $ = (id) => document.getElementById(id);
   const DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
-  const PLATFORM_NAMES = { instagram: 'Instagram', linkedin: 'LinkedIn', facebook: 'Facebook', tiktok: 'TikTok' };
+  const PLATFORM_NAMES = { instagram: 'Instagram', linkedin: 'LinkedIn', facebook: 'Facebook', tiktok: 'TikTok', dat: 'DAT', truckstop: 'Truckstop', '123loadboard': '123Loadboard' };
   const ENGINE_NAMES = { chromium_patched: 'Chrome', cloakbrowser: 'CloakBrowser', camoufox: 'Camoufox' };
 
   function el(tag, attrs, children) {

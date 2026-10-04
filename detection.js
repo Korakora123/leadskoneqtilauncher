@@ -69,6 +69,9 @@ const PLATFORM_HOSTS = {
   linkedin: /linkedin\.com/i,
   facebook: /facebook\.com|fb\.com/i,
   tiktok: /tiktok\.com/i,
+  dat: /dat\.com/i,
+  truckstop: /truckstop\.com/i,
+  '123loadboard': /123loadboard\.com/i,
 };
 
 /**

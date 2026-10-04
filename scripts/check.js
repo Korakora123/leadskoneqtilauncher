@@ -21,6 +21,8 @@ const CONTRACT_JOB_TYPES = [
   'scrape_job_posts', 'scrape_website', 'check_gbp', 'check_social_profile', 'send_instagram_dm',
   'send_linkedin_message', 'send_linkedin_connect', 'send_linkedin_voice_note', 'send_facebook_dm',
   'community_engage', 'content_like', 'capture_proof_screenshots', 'capture_video_frames', 'canary_routine',
+  // DISPATCH_CONTRACTS.md §4
+  'search_load_board',
 ];
 
 let failed = 0;

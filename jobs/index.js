@@ -1,6 +1,6 @@
 'use strict';
 /**
- * Job registry — maps every job type in CONTRACTS.md §3 to its module.
+ * Job registry — maps every job type in CONTRACTS.md §3 (+ DISPATCH_CONTRACTS.md §4) to its module.
  *
  * Job module interface (executor-agnostic, no Electron imports):
  *   {
@@ -32,6 +32,7 @@ const modules = [
   require('./capture-proof-screenshots'),
   require('./capture-video-frames'),
   require('./canary-routine'),
+  require('./search-load-board'), // Dispatch OS (DISPATCH_CONTRACTS.md §4)
 ];
 
 const JOBS = Object.fromEntries(modules.map((m) => [m.type, m]));

@@ -19,11 +19,27 @@ const { createLogger } = require('./logger');
 const log = createLogger('profiles');
 
 const SOCIAL_PLATFORMS = ['instagram', 'linkedin', 'facebook', 'tiktok'];
-const PLATFORMS = [...SOCIAL_PLATFORMS, 'web'];
+/**
+ * Load boards (Dispatch OS, DISPATCH_CONTRACTS §4): the dispatcher's OWN logged-in board
+ * account, human pace, within the board's terms. Never bulk-scraped, stored or resold.
+ */
+const BOARD_PLATFORMS = ['dat', 'truckstop', '123loadboard'];
+/** Platforms whose jobs need a logged-in user profile (vs. the system 'web' profiles). */
+const LOGIN_PLATFORMS = [...SOCIAL_PLATFORMS, ...BOARD_PLATFORMS];
+const PLATFORMS = [...LOGIN_PLATFORMS, 'web'];
 const ENGINES = ['cloakbrowser', 'camoufox', 'chromium_patched'];
 
 /** Base daily ACTION limits per account (CLAUDE.md coding rule 3). */
-const BASE_DAILY_LIMITS = { instagram: 20, linkedin: 20, facebook: 15, tiktok: 15 };
+const BASE_DAILY_LIMITS = {
+  instagram: 20, linkedin: 20, facebook: 15, tiktok: 15,
+  // Load boards: searches per day per board account (low, human pace — DISPATCH_OS §3.3).
+  dat: 40, truckstop: 40, '123loadboard': 40,
+};
+/**
+ * Platforms whose accounts are the user's existing, established accounts used at a fixed low
+ * pace (no outreach) → no warmup ramp. Board searches still hit the hard daily limit above.
+ */
+const NO_WARMUP_PLATFORMS = [...BOARD_PLATFORMS];
 /** Read-only page views (scrapes/checks) allowed per day = action limit × this. */
 const VIEW_MULTIPLIER = 5;
 
@@ -32,6 +48,10 @@ const LOGIN_URLS = {
   linkedin: 'https://www.linkedin.com/login',
   facebook: 'https://www.facebook.com/login/',
   tiktok: 'https://www.tiktok.com/login',
+  // Best-effort board entry points (user logs in with the dispatcher's own account).
+  dat: 'https://one.dat.com/',
+  truckstop: 'https://main.truckstop.com/',
+  '123loadboard': 'https://members.123loadboard.com/',
   web: 'https://www.google.com/maps',
 };
 
@@ -262,6 +282,7 @@ class ProfileManager {
   }
 
   warmupPct(profile, now = Date.now()) {
+    if (profile && NO_WARMUP_PLATFORMS.includes(profile.platform)) return 1;
     const week = this.warmupWeek(profile, now);
     if (week <= 1) return 0.25;
     if (week === 2) return 0.5;
@@ -332,7 +353,7 @@ class ProfileManager {
   statusOf(p) {
     if (p.status === 'restricted') return 'restricted';
     if (p.status === 'paused' || p.attention) return 'paused';
-    if (p.platform !== 'web' && this.warmupWeek(p) < 4) return 'warming';
+    if (p.platform !== 'web' && !NO_WARMUP_PLATFORMS.includes(p.platform) && this.warmupWeek(p) < 4) return 'warming';
     return 'active';
   }
 
@@ -378,6 +399,9 @@ module.exports = {
   ProfileManager,
   PLATFORMS,
   SOCIAL_PLATFORMS,
+  BOARD_PLATFORMS,
+  LOGIN_PLATFORMS,
+  NO_WARMUP_PLATFORMS,
   ENGINES,
   BASE_DAILY_LIMITS,
   LOGIN_URLS,

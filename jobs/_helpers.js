@@ -61,7 +61,11 @@ function relativeToIso(v, now = Date.now()) {
   const direct = toIsoDate(v);
   if (direct && !/ago|hace|منذ|پہلے/i.test(String(v))) return direct;
   const s = String(v).toLowerCase();
-  const n = parseCount(s) || 1;
+  // Plain number only: parseCount would read "12 min" as 12 million.
+  const digits = s.replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)))
+    .replace(/[۰-۹]/g, (d) => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)));
+  const nm = /(\d+)/.exec(digits);
+  const n = nm ? parseInt(nm[1], 10) : 1;
   const table = [
     [/min|minuto|دقيق|منٹ/, 60e3],
     [/hour|hr|hora|ساع|گھنٹ/, 3600e3],

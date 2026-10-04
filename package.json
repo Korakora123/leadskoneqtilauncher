@@ -14,7 +14,7 @@
     "start": "electron .",
     "icon": "node scripts/make-icon.js && node scripts/make-icon.js 512",
     "check": "node scripts/check.js",
-    "smoke": "node test/smoke-ws.js && node test/smoke-recipe.js && node test/smoke-seeds.js && node test/smoke-new-recipes.js",
+    "smoke": "node test/smoke-ws.js && node test/smoke-recipe.js && node test/smoke-seeds.js && node test/smoke-new-recipes.js && node test/smoke-load-board.js",
     "dist": "electron-builder --win --mac --linux",
     "dist:win": "electron-builder --win",
     "dist:mac": "electron-builder --mac",

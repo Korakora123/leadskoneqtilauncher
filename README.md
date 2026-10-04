@@ -74,8 +74,9 @@ The installed app reads its config from `<userData>/.env` (then the app resource
 - **Behavior engine** (`behavior.js`): `humanDelay`, `humanType` (per-char variance +
   thinking pauses), `humanScroll`, `humanMove`, `readingTime`, `sessionWindow`.
 - **Local hard stops** (in addition to brain): one job per profile at a time; daily
-  action limits Instagram 20, LinkedIn 20, Facebook 15, TikTok 15 (brain's `welcome.limits`
-  can only lower them) × warmup (week1 25%, week2 50%, week3 75%, week4+ 100%); page views
+  action limits Instagram 20, LinkedIn 20, Facebook 15, TikTok 15, load boards (DAT /
+  Truckstop / 123Loadboard) 40 searches (brain's `welcome.limits` can only lower them) × warmup
+  (boards: no warmup) (week1 25%, week2 50%, week3 75%, week4+ 100%); page views
   capped at 5× that; jobs only inside the profile's working hours; counters reset at
   local midnight.
 - **Challenge detection** (`detection.js`): captcha iframes (reCAPTCHA / hCaptcha /
@@ -125,11 +126,25 @@ All results: `job_result { job_id, status: success|failed|blocked|skipped, data,
 | `capture_proof_screenshots` | optional (per target) | `prospect_id, kind?, targets:[{ name, url?\|html?, selector?, full_page?, wait_ms?, width?, height? }]` | `{ prospect_id, files:[{ name, source_url, width, height, url, path }], failed }` |
 | `capture_video_frames` | — | `prospect_id, video_id?, width?=1280, height?=720, frames:[{ name, url?\|html?, selector?, wait_ms? }]` | `{ prospect_id, video_id, width, height, frames:[{ index, name, url, path }] }` |
 | `canary_routine` | optional | `platform, routine?: feed\|messages\|both` | `{ platform, visited, logged_in, challenges, healthy, checked_at }` |
+| `search_load_board` (Dispatch OS, DISPATCH_CONTRACTS §4) | required (`platform` = board, action `search_loads`) | `board: dat\|truckstop\|123loadboard, origin:{ city, state, zip? }, radius_mi?=100, equipment?=dry_van, pickup_date?=today (YYYY-MM-DD), max_results?=25 (≤ 50)` | `{ board, searched_at, origin, radius_mi, equipment, pickup_date, count, loads:[{ external_ref, broker_name, broker_mc, origin:{city,state,zip}, destination:{city,state,zip}, pickup_at, equipment, weight_lbs, miles, rate_cents, rate_per_mile_cents, posted_at }] }` + `_meta.{ board, raw_rows, max_results, truncated, paced_ms }` |
+
+`search_load_board` runs only on the dispatcher's **own logged-in board profile** (Profiles →
+add DAT / Truckstop / 123Loadboard → open its browser and log in). Human pace: 40 searches/day
+per board profile (no warmup ramp; brain `welcome.limits` can only lower it), a randomized
+45-90 s gap between consecutive searches on the same profile, one results page, ≤ 50 rows.
+Rows go to the brain only (never written to disk or logged). Normalization: `"$2,450"` →
+`rate_cents 245000`, `"$2.15/mi"` → `rate_per_mile_cents 215`, `"1,234 mi"` → `1234`,
+`"42K lbs"` → `42000`, `"MC# 123456"` → `"123456"`, pickup → `YYYY-MM-DD` (year inferred),
+age (`5m`, `00:45`, `12 min ago`) → ISO `posted_at`, equipment → `dry_van|reefer|flatbed|…`;
+rows without a board ref get a stable `h_<sha1>` ref. Login wall → `blocked` + `logged_out`
+(profile paused until the user logs in again); captcha → `blocked` + `captcha_detected`.
+Recipes: `Leadskoneqtiapp/supabase/seeds/dispatch_recipes.sql` (best-effort selectors — verify
+on the live board; official board APIs are preferred whenever the tenant has partner access).
 
 Action jobs whose recipe saves `state: { already_connected | already_sent | already_liked | cannot_message: true }`
 finish as `skipped` with `data: { sent: false, state }`. Common `error` codes:
 `recipe_required`, `missing_payload_fields:<f>`, `platform_paused`, `device_paused`,
-`daily_limit_reached` (+ warning `rate_limited`), `outside_working_hours`,
+`daily_limit_reached` (+ warning `rate_limited`), `outside_working_hours`, `unsupported_board:<b>`,
 `profile_needs_attention:<reason>`, `no_profile_for_platform:<p>`, `deadline_passed`,
 `cancelled`, `job_timeout`, `selector_failed`, `browser_launch_failed`.
 
@@ -139,6 +154,7 @@ finish as `skipped` with `data: { sent: false, state }`. Common `error` codes:
 npm run check    # requires every non-Electron module, syntax-checks Electron files,
                  # verifies the job registry == CONTRACTS job types, no electron imports in executor code
 npm run smoke    # fake-brain WebSocket test + headless recipe/runner tests + seeded-recipe tests
+                 # + load-board test (seeded dispatch recipes vs mock DAT/Truckstop/123Loadboard pages)
 ```
 
 ## Layout
