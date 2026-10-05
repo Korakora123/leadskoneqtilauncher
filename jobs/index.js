@@ -33,6 +33,7 @@ const modules = [
   require('./capture-video-frames'),
   require('./canary-routine'),
   require('./search-load-board'), // Dispatch OS (DISPATCH_CONTRACTS.md §4)
+  require('./scrape-directory'), // Buyer sources Electron fallback (V2_API_INTEGRATIONS_CONTRACTS.md §8)
 ];
 
 const JOBS = Object.fromEntries(modules.map((m) => [m.type, m]));

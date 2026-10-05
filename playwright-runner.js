@@ -358,7 +358,13 @@ class JobRunner extends EventEmitter {
 
       const ctx = this._buildCtx(entry, page, adapter);
       const res = await mod.run(ctx);
-      outcome = { status: 'success', data: (res && res.data) || {}, warnings: (res && res.warnings) || [], countAction: res && res.countAction };
+      outcome = {
+        status: 'success',
+        data: (res && res.data) || {},
+        warnings: (res && res.warnings) || [],
+        countAction: res && res.countAction,
+        actionCount: res && res.actionCount,
+      };
     } catch (err) {
       outcome = this._mapError(err, entry);
     } finally {
@@ -392,7 +398,11 @@ class JobRunner extends EventEmitter {
 
     // Counters: views count whenever the page was opened; actions only on success.
     if (category === 'views' && page) this.pm.increment(profile.id, 'views');
-    if (category === 'actions' && outcome.status === 'success' && outcome.countAction !== false) this.pm.increment(profile.id, 'actions');
+    // A job may report several actions (e.g. scrape_directory linkedin_search: one per results page).
+    if (category === 'actions' && outcome.status === 'success' && outcome.countAction !== false) {
+      const n = Math.max(1, Math.min(1000, Math.round(Number(outcome.actionCount) || 1)));
+      this.pm.increment(profile.id, 'actions', n);
+    }
 
     const meta = {
       engine: adapter.engine,
@@ -456,6 +466,13 @@ class JobRunner extends EventEmitter {
       behavior,
       log: this.log,
       progress: (step, message) => self._progress(job, step, message),
+      /** Today's local daily-limit budget for this profile ({ used, limit, remaining }; limit null = unlimited). */
+      quota(category = entry.category) {
+        const p = self.pm.get(profile.id) || profile;
+        const limit = self.pm.dailyLimit(p, category);
+        const used = (self.pm.usage(p) || {})[category] || 0;
+        return { used, limit, remaining: limit === null ? null : Math.max(0, limit - used) };
+      },
       async runRecipe(vars = {}, recipe = job.recipe) {
         const res = await executeRecipe(page, recipe, {
           vars: { ...payload, ...vars },

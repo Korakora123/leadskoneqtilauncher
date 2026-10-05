@@ -23,6 +23,8 @@ const CONTRACT_JOB_TYPES = [
   'community_engage', 'content_like', 'capture_proof_screenshots', 'capture_video_frames', 'canary_routine',
   // DISPATCH_CONTRACTS.md §4
   'search_load_board',
+  // V2_API_INTEGRATIONS_CONTRACTS.md §8
+  'scrape_directory',
 ];
 
 let failed = 0;

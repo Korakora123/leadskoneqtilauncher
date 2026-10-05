@@ -16,7 +16,7 @@
  *   type         { selectors, value, clear?: boolean, press_enter?: boolean }
  *   wait_for     { selectors?, state?: 'visible'|'attached'|'hidden', url_includes?, ms? }
  *   scroll       { selectors? (container), times?: number, until_count?: { selector, count } }
- *   extract      { list_selector?, fields: { name: css | {selector(s), attr?, multiple?, regex?, html?} }, save_as?, limit? }
+ *   extract      { list_selector? | list_selectors? (fallbacks, first match wins), fields: { name: css | {selector(s), attr?, multiple?, regex?, html?} }, save_as?, limit? }
  *   screenshot   { selectors? (element), full_page?: boolean, name? }
  *   press        { key, selectors? (focus first) }
  *   delay        { ms? | min_ms, max_ms }
@@ -358,8 +358,18 @@ async function runStep(page, step, ctx) {
       const key = step.save_as || step.id;
       const fields = step.fields || {};
       const limit = Math.max(1, num(step.limit, 500));
-      if (step.list_selector) {
-        const items = await page.locator(step.list_selector).all();
+      const listSels = [
+        ...(Array.isArray(step.list_selectors) ? step.list_selectors : []),
+        ...(typeof step.list_selector === 'string' && step.list_selector ? [step.list_selector] : []),
+      ].filter((x) => typeof x === 'string' && x.trim());
+      if (listSels.length) {
+        // list_selectors: fallbacks in order — the first selector that matches any element wins.
+        let items = [];
+        for (const sel of listSels) {
+          // eslint-disable-next-line no-await-in-loop
+          items = await page.locator(sel).all().catch(() => []);
+          if (items.length) break;
+        }
         const out = [];
         for (const item of items.slice(0, limit)) {
           if (signal && signal.aborted) throw new Error('cancelled');

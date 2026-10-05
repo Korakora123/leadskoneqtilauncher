@@ -128,6 +128,7 @@ All results: `job_result { job_id, status: success|failed|blocked|skipped, data,
 | `canary_routine` | optional | `platform, routine?: feed\|messages\|both` | `{ platform, visited, logged_in, challenges, healthy, checked_at }` |
 | `search_load_board` (Dispatch OS, DISPATCH_CONTRACTS §4) | required (`platform` = board, action `search_loads`) | `board: dat\|truckstop\|123loadboard, origin:{ city, state, zip? }, radius_mi?=100, equipment?=dry_van, pickup_date?=today (YYYY-MM-DD), max_results?=25 (≤ 50)` | `{ board, searched_at, origin, radius_mi, equipment, pickup_date, count, loads:[{ external_ref, broker_name, broker_mc, origin:{city,state,zip}, destination:{city,state,zip}, pickup_at, equipment, weight_lbs, miles, rate_cents, rate_per_mile_cents, posted_at }] }` + `_meta.{ board, raw_rows, max_results, truncated, paced_ms }` |
 
+| `scrape_directory` (V2_API_INTEGRATIONS_CONTRACTS §8) | required (`platform` = `directory:<directory>`, action `scrape_directory`) | `directory: crunchbase\|g2\|capterra\|saashub\|clutch\|shopify_dirs\|linkedin_search, query:{ keywords?, category?, location?, url?, type?: companies\|people }, limit?=25 (≤ 100; linkedin ≤ 50)` | `{ directory, items:[{ name, website, domain, description, category, location, linkedin_url, source_url, extra }], pages, stopped_reason: limit_reached\|no_more_pages\|captcha\|blocked\|daily_limit\|error }` + `_meta.{ limit, raw_items, details_visited, actions_used, paced_ms }` |
 `search_load_board` runs only on the dispatcher's **own logged-in board profile** (Profiles →
 add DAT / Truckstop / 123Loadboard → open its browser and log in). Human pace: 40 searches/day
 per board profile (no warmup ramp; brain `welcome.limits` can only lower it), a randomized
@@ -138,6 +139,18 @@ Rows go to the brain only (never written to disk or logged). Normalization: `"$2
 age (`5m`, `00:45`, `12 min ago`) → ISO `posted_at`, equipment → `dry_van|reefer|flatbed|…`;
 rows without a board ref get a stable `h_<sha1>` ref. Login wall → `blocked` + `logged_out`
 (profile paused until the user logs in again); captcha → `blocked` + `captcha_detected`.
+
+`scrape_directory` is the Electron FALLBACK for buyer sources (official APIs / feeds first). The recipe's
+`config` step (never executed) holds the search / category URL templates, directory `hosts`, pagination
+(`page_param` / `page_start`, or a `pager.next_url` link) and detail mode; `phase: 'list'` steps run per
+results page and `phase: 'detail'` steps per item without a website. Public directories run on the system
+web profile (randomized gap between pages and between jobs on the same directory); `linkedin_search` runs on
+the user's LinkedIn profile and every LinkedIn page load counts as one action toward the LinkedIn daily limit
+(20, warmup applies) → `stopped_reason: daily_limit`. Domain = lowercase host without scheme / `www.`;
+directory redirect links (`r.clutch.co/redirect?u=…`, `…/redirect?url=…`) are unwrapped, links that stay on
+the directory or point to social sites are never a website. Bot challenge on the first page → `blocked` +
+`captcha_detected`; on a later page → `success` with the items so far and `stopped_reason: captcha`.
+Smoke test: `node test/smoke-directory.js` (fixtures in `test/fixtures/directory/`).
 Recipes: `Leadskoneqtiapp/supabase/seeds/dispatch_recipes.sql` (best-effort selectors — verify
 on the live board; official board APIs are preferred whenever the tenant has partner access).
 
